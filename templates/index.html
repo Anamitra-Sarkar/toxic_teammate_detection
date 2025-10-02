@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toxic Teammate Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc; /* Slightly lighter gray */
+        }
+        .input-error {
+            border-color: #f56565; /* Red border for errors */
+        }
+        .error-message {
+            color: #c53030; /* Darker red for text */
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            margin-top: 0.25rem; /* Smaller margin */
+            display: none; /* Initially hidden */
+        }
+        .error-message.active {
+            display: block; /* Show when there is an error */
+        }
+        #predictionResult {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-top: 1.5rem;
+            text-align: center;
+            font-weight: 600; /* Semibold */
+            font-size: 1.125rem; /* Larger text */
+            display: none; /* Hide initially */
+        }
+        #predictionResult.yes {
+            color: #721c24; /* Dark red text */
+            background-color: #f8d7da; /* Light red background */
+            border: 1px solid #f5c6cb; /* Medium red border */
+        }
+        #predictionResult.no {
+             color: #155724; /* Dark green text */
+            background-color: #d4edda; /* Light green background */
+            border: 1px solid #c3e6cb; /* Medium green border */
+        }
+         #predictionResult.error {
+            color: #721c24; /* Dark red text */
+            background-color: #f8d7da; /* Light red background */
+            border: 1px solid #f5c6cb; /* Medium red border */
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="container max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-800 text-center mb-6">Toxic Teammate Detector</h1>
+        <p class="text-gray-600 text-center mb-8">Evaluate teammate behavior based on the following criteria.</p>
+
+        <form id="toxicityForm" class="space-y-5">
+            <div>
+                <label for="missedMeetings" class="block text-gray-700 text-sm font-semibold mb-2">Missed Meetings (Frequency 0-5):</label>
+                <input type="number" id="missedMeetings" name="Missed Meetings (Frequency)" min="0" max="5" step="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p id="missedMeetingsError" class="error-message"></p>
+            </div>
+
+            <div>
+                <label for="deadlineAdherence" class="block text-gray-700 text-sm font-semibold mb-2">Deadline Adherence:</label>
+                <select id="deadlineAdherence" name="Deadline Adherence" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="" disabled selected>-- Select --</option> <option value="Always on time">Always on time</option>
+                    <option value="Usually on time">Usually on time</option>
+                    <option value="Sometimes late">Sometimes late</option>
+                    <option value="Frequently late">Frequently late</option>
+                </select>
+                <p id="deadlineAdherenceError" class="error-message"></p>
+            </div>
+
+             <div>
+                <label for="contributionQuality" class="block text-gray-700 text-sm font-semibold mb-2">Contribution Quality (1-5):</label>
+                <input type="number" id="contributionQuality" name="Contribution Quality" min="1" max="5" step="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p id="contributionQualityError" class="error-message"></p>
+            </div>
+
+             <div>
+                <label for="responsiveness" class="block text-gray-700 text-sm font-semibold mb-2">Responsiveness (1-5):</label>
+                <input type="number" id="responsiveness" name="Responsiveness" min="1" max="5" step="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p id="responsivenessError" class="error-message"></p>
+            </div>
+
+            <div>
+                <label for="communicationRespect" class="block text-gray-700 text-sm font-semibold mb-2">Communication Respect (1-5):</label>
+                <input type="number" id="communicationRespect" name="Communication Respect" min="1" max="5" step="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p id="communicationRespectError" class="error-message"></p>
+            </div>
+
+            <div>
+                <label for="workloadFairness" class="block text-gray-700 text-sm font-semibold mb-2">Workload Fairness (Perception) (1-5):</label>
+                <input type="number" id="workloadFairness" name="Workload Fairness (Perception)" min="1" max="5" step="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p id="workloadFairnessError" class="error-message"></p>
+            </div>
+
+            <div>
+                <label for="discussionParticipation" class="block text-gray-700 text-sm font-semibold mb-2">Discussion Participation (1-5):</label>
+                <input type="number" id="discussionParticipation" name="Discussion Participation" min="1" max="5" step="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p id="discussionParticipationError" class="error-message"></p>
+            </div>
+
+            <div>
+                <label for="creditTaking" class="block text-gray-700 text-sm font-semibold mb-2">Takes Undue Credit:</label>
+                <select id="creditTaking" name="Credit Taking" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                     <option value="" disabled selected>-- Select --</option>
+                     <option value="Yes">Yes</option>
+                     <option value="No">No</option>
+                </select>
+                <p id="creditTakingError" class="error-message"></p>
+            </div>
+
+            <div>
+                <label for="conflictNegativity" class="block text-gray-700 text-sm font-semibold mb-2">Conflict/Negativity Level (1-5):</label>
+                <input type="number" id="conflictNegativity" name="Conflict/Negativity" min="1" max="5" step="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p id="conflictNegativityError" class="error-message"></p>
+            </div>
+
+            <div>
+                <label for="harshCriticism" class="block text-gray-700 text-sm font-semibold mb-2">Gives Harsh Criticism (1-5):</label>
+                <input type="number" id="harshCriticism" name="Harsh Criticism" min="1" max="5" step="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p id="harshCriticismError" class="error-message"></p>
+            </div>
+
+            <div>
+                <label for="reworkRequired" class="block text-gray-700 text-sm font-semibold mb-2">Frequently Causes Rework:</label>
+                <select id="reworkRequired" name="Rework Required" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                     <option value="" disabled selected>-- Select --</option>
+                     <option value="Yes">Yes</option>
+                     <option value="No">No</option>
+                </select>
+                <p id="reworkRequiredError" class="error-message"></p>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                Predict Toxicity
+            </button>
+        </form>
+
+        <div id="predictionResult"></div>
+         <div id="loadingIndicator" class="text-center mt-4 text-gray-500" style="display: none;">
+             Predicting...
+         </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('toxicityForm');
+        const predictionResult = document.getElementById('predictionResult');
+        const loadingIndicator = document.getElementById('loadingIndicator'); // Get loading indicator
+
+        // --- Input and Error Elements (Simplified Access) ---
+        const inputs = {};
+        const errors = {};
+        form.querySelectorAll('input, select').forEach(el => {
+            inputs[el.id] = el; // Store input element by id
+            const errorEl = document.getElementById(el.id + 'Error');
+            if (errorEl) {
+                errors[el.id] = errorEl; // Store corresponding error element
+            }
+        });
+
+        // --- Validation Function ---
+        function validateInput() {
+            let isValid = true;
+
+            // Reset all errors
+            for (const id in errors) {
+                errors[id].classList.remove('active');
+                errors[id].textContent = '';
+                inputs[id].classList.remove('input-error');
+            }
+            predictionResult.style.display = 'none'; // Hide previous result
+
+            // Loop through inputs for validation
+            for (const id in inputs) {
+                const input = inputs[id];
+                const error = errors[id];
+                let message = '';
+
+                if (!input.value || (input.tagName === 'SELECT' && input.value === "")) {
+                     message = `${input.previousElementSibling.textContent.replace(':', '')} is required`;
+                } else if (input.type === 'number') {
+                     const numValue = parseInt(input.value);
+                     const min = parseInt(input.min);
+                     const max = parseInt(input.max);
+                     if (isNaN(numValue) || numValue < min || numValue > max) {
+                         message = `${input.previousElementSibling.textContent.replace(':', '')} must be between ${min} and ${max}`;
+                     }
+                 }
+
+                 if (message && error) {
+                     error.textContent = message;
+                     error.classList.add('active');
+                     input.classList.add('input-error');
+                     isValid = false;
+                 }
+            }
+            return isValid;
+        }
+
+        // --- Form Submission Handler ---
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            if (!validateInput()) {
+                return; // Stop if validation fails
+            }
+
+            // Show loading indicator, hide result
+            loadingIndicator.style.display = 'block';
+            predictionResult.style.display = 'none';
+
+            // Collect form data into an object
+            // Keys MUST match the ORIGINAL_FEATURE_COLUMNS in app.py
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                // Check if the value is numeric based on the input type=number
+                const inputElement = form.elements[key]; // Get the element by name
+                if (inputElement && inputElement.type === 'number') {
+                    data[key] = parseInt(value); // Send numbers as numbers
+                } else {
+                    data[key] = value; // Send others as strings
+                }
+            });
+
+
+            console.log('Data being sent:', JSON.stringify(data)); // Log the data
+
+            // Send data to the Flask API
+            // Use 127.0.0.1 for local development, change if deploying elsewhere
+            fetch('http://192.168.7.168:5000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data), // Convert data object to JSON string
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    // Try to get error message from server response body
+                    return response.json().then(errData => {
+                        throw new Error(`HTTP error ${response.status}: ${errData.error || response.statusText}`);
+                    }).catch(() => {
+                         // Fallback if response body isn't JSON or has no error field
+                         throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+                    });
+                }
+                return response.json(); // Parse JSON response
+            })
+            .then(resultData => {
+                console.log('Received data:', resultData);
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
+                predictionResult.style.display = 'block'; // Show result area
+
+                // Display the prediction
+                if (resultData.prediction) {
+                     const predictionText = resultData.prediction; // Should be 'Yes' or 'No'
+                     predictionResult.textContent = `Prediction: Teammate is likely ${predictionText === 'Yes' ? 'Toxic' : 'Not Toxic'}`;
+                     // Apply CSS class based on prediction
+                     predictionResult.className = predictionText === 'Yes' ? 'yes' : 'no';
+                 } else if (resultData.error) {
+                     predictionResult.textContent = `Error: ${resultData.error}`;
+                     predictionResult.className = 'error';
+                 } else {
+                      predictionResult.textContent = 'Error: Received unexpected data format from server.';
+                      predictionResult.className = 'error';
+                 }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
+                predictionResult.style.display = 'block'; // Show result area
+                predictionResult.textContent = `Error: Could not get prediction. ${error.message}`;
+                predictionResult.className = 'error'; // Use error styling
+            });
+        });
+    </script>
+</body>
+</html>
